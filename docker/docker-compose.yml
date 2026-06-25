@@ -10,6 +10,11 @@ services:
     volumes:
       - ../migrations:/migrations
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
   api:
     build: ..
     ports:

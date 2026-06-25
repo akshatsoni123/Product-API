@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "db:up": "docker compose -f docker/docker-compose.yml up postgres -d",
+    "db:up": "docker compose -f docker/docker-compose.yml up postgres redis -d",
     "db:down": "docker compose -f docker/docker-compose.yml down",
     "db:migrate": "docker compose -f docker/docker-compose.yml exec -T postgres psql -U postgres -d productdb -f /migrations/001_create_products.sql",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,6 +25,7 @@
   "dependencies": {
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "ioredis": "^5.11.1",
     "pg": "^8.22.0"
   },
   "devDependencies": {

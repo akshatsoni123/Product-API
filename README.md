@@ -2,6 +2,8 @@
 
 Learning project: REST product API with **PostgreSQL**, **Redis caching**, and **nginx load balancing**.
 
+📖 **[LEARNING_GUIDE.md](./LEARNING_GUIDE.md)** — detailed student guide: architecture, ticket-by-ticket implementation, concepts, and critical thinking questions.
+
 ## Stack
 
 - Node.js + Express

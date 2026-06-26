@@ -1,6 +1,6 @@
 # Product API
 
-Learning project: REST product API with **PostgreSQL**, **Redis caching**, and (upcoming) load balancing.
+Learning project: REST product API with **PostgreSQL**, **Redis caching**, and **nginx load balancing**.
 
 ## Stack
 
@@ -28,6 +28,50 @@ API runs at `http://localhost:3000`.
 | `npm run db:up` | Start Postgres + Redis in Docker |
 | `npm run db:down` | Stop Docker services |
 | `npm run db:migrate` | Run SQL migrations |
+| `npm run lb:up` | Start full stack (3 APIs + nginx + DB + Redis) |
+| `npm run lb:down` | Stop full stack |
+
+## Local dev (single instance)
+
+```bash
+npm run db:up
+npm run db:migrate
+npm run dev
+```
+
+API at `http://localhost:3000`.
+
+## Load balancing (issue #3)
+
+```bash
+npm run lb:up
+npm run db:migrate   # first time only
+```
+
+All traffic goes through nginx at **`http://localhost`** (port 80).
+
+Test round-robin — run 10 times and check `X-Instance-Id` header:
+
+```bash
+curl -i http://localhost/health
+```
+
+PowerShell:
+
+```powershell
+1..10 | ForEach-Object { (Invoke-WebRequest http://localhost/health).Headers['X-Instance-Id'] }
+```
+
+You should see `api-1`, `api-2`, `api-3` rotating.
+
+Product API through load balancer:
+
+```bash
+curl http://localhost/products
+curl http://localhost/products/1
+```
+
+Stop: `npm run lb:down`
 
 ## Endpoints
 

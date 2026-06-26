@@ -15,12 +15,46 @@ services:
     ports:
       - "6379:6379"
 
-  api:
+  api-1:
     build: ..
-    ports:
-      - "3000:3000"
     environment:
       PORT: 3000
+      INSTANCE_ID: api-1
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/productdb
+      REDIS_URL: redis://redis:6379
     depends_on:
       - postgres
+      - redis
+
+  api-2:
+    build: ..
+    environment:
+      PORT: 3000
+      INSTANCE_ID: api-2
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/productdb
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  api-3:
+    build: ..
+    environment:
+      PORT: 3000
+      INSTANCE_ID: api-3
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/productdb
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-1
+      - api-2
+      - api-3

@@ -11,7 +11,11 @@
     "db:migrate": "docker compose -f docker/docker-compose.yml exec -T postgres psql -U postgres -d productdb -f /migrations/001_create_products.sql",
     "lb:up": "docker compose -f docker/docker-compose.yml up --build -d",
     "lb:down": "docker compose -f docker/docker-compose.yml down",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test:k6": "docker run --rm -e BASE_URL=http://host.docker.internal -v \"%cd%/scripts/k6:/scripts\" grafana/k6 run /scripts/smoke.js",
+    "test:k6:health": "docker run --rm -e BASE_URL=http://host.docker.internal -v \"%cd%/scripts/k6:/scripts\" grafana/k6 run /scripts/health.js",
+    "test:k6:lb": "docker run --rm -e BASE_URL=http://host.docker.internal -v \"%cd%/scripts/k6:/scripts\" grafana/k6 run /scripts/load-balancer.js",
+    "test:k6:rate-limit": "docker run --rm -e BASE_URL=http://host.docker.internal -v \"%cd%/scripts/k6:/scripts\" grafana/k6 run /scripts/rate-limit.js",
+    "test": "npm run test:k6:health"
   },
   "repository": {
     "type": "git",

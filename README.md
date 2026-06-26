@@ -7,8 +7,31 @@ Learning project: REST product API with **PostgreSQL**, **Redis caching**, and *
 - Node.js + Express
 - PostgreSQL (Docker)
 - Redis (Docker, cache-aside pattern)
+- nginx (load balancer, 3 API replicas)
+- k6 (automated load / smoke tests)
 
-## Setup
+## Project scaffold (issue #6)
+
+**Stack chosen:** Node.js + Express + PostgreSQL + Redis
+
+**Start full stack (Postgres + Redis + 3 APIs + nginx):**
+
+```bash
+npm install
+npm run lb:up
+npm run db:migrate   # first time only
+```
+
+**Health check:**
+
+```bash
+curl http://localhost/health
+# → { "status": "ok" }
+```
+
+Copy `.env.example` to `.env` for local single-instance dev (`npm run dev`).
+
+## Setup (local dev)
 
 ```bash
 npm install
@@ -30,6 +53,10 @@ API runs at `http://localhost:3000`.
 | `npm run db:migrate` | Run SQL migrations |
 | `npm run lb:up` | Start full stack (3 APIs + nginx + DB + Redis) |
 | `npm run lb:down` | Stop full stack |
+| `npm run test:k6` | k6 smoke test (health + products) |
+| `npm run test:k6:health` | k6 health check only |
+| `npm run test:k6:lb` | k6 load balancer header test |
+| `npm run test:k6:rate-limit` | k6 rate limit test (expect 429) |
 
 ## Local dev (single instance)
 
@@ -83,6 +110,20 @@ Stop: `npm run lb:down`
 | GET | `/products/:id` | Get product (cached in Redis) |
 | PUT | `/products/:id` | Update product |
 | DELETE | `/products/:id` | Delete product |
+| POST | `/products/:id/purchase` | Purchase (decrement stock) |
+
+## k6 automated tests
+
+Requires Docker. Start the stack first: `npm run lb:up`
+
+```bash
+npm run test:k6:health      # GET /health → 200
+npm run test:k6             # smoke: health + products
+npm run test:k6:lb          # X-Instance-Id from api-1/2/3
+npm run test:k6:rate-limit  # 110 requests → some 429
+```
+
+k6 runs in Docker (`grafana/k6`) and hits `http://host.docker.internal` (your nginx on port 80).
 
 ## Example requests
 

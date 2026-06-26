@@ -4,6 +4,7 @@ const instanceId = require('./middleware/instanceId');
 const productRoutes = require('./routes/products');
 
 const app = express();
+app.set('trust proxy', 1);
 app.use(express.json());
 app.use(instanceId);
 

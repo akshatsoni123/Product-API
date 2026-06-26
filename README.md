@@ -110,6 +110,27 @@ curl -X DELETE http://localhost:3000/products/1
 
 Inspect cache with [Redis Insight](https://redis.io/insight/) at `localhost:6379`.
 
+## Rate limiting
+
+- `GET /products` and `GET /products/:id` — **100 requests per minute per IP**
+- Returns `429 Too Many Requests` with `Retry-After` header when exceeded
+- Enforced via shared Redis (works across all load-balanced instances)
+
+Test via nginx:
+
+```powershell
+1..105 | ForEach-Object {
+  try {
+    $r = Invoke-WebRequest http://localhost/products -UseBasicParsing
+    "$_ : $($r.StatusCode)"
+  } catch {
+    "$_ : $($_.Exception.Response.StatusCode.value__)"
+  }
+}
+```
+
+Requests 101+ should return `429`.
+
 ## Env vars
 
 ```

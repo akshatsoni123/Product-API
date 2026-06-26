@@ -9,6 +9,7 @@ const readLimit = rateLimiter({
 });
 
 router.post('/', c.create);
+router.post('/:id/purchase', c.purchase);
 router.get('/', readLimit, c.list);
 router.get('/:id', readLimit, c.getById);
 router.put('/:id', c.update);

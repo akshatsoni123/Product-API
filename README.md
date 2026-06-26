@@ -131,6 +131,27 @@ Test via nginx:
 
 Requests 101+ should return `429`.
 
+## Purchase endpoint (issue #5)
+
+`POST /products/:id/purchase` with body `{ "quantity": 1 }`
+
+Uses a Redis lock (`lock:product:{id}`) so concurrent purchases cannot oversell stock.
+
+```bash
+curl -X POST http://localhost/products/1/purchase \
+  -H "Content-Type: application/json" \
+  -d '{"quantity": 1}'
+```
+
+Concurrent test (set product stock to 1 first):
+
+```bash
+# via nginx
+API_URL=http://localhost/products node scripts/concurrent-purchase.js 1 1 10
+```
+
+Only one request should succeed (`200`); others return `409 Insufficient stock`.
+
 ## Env vars
 
 ```

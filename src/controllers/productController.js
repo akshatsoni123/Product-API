@@ -8,6 +8,7 @@ const {
   invalidateProduct,
   invalidateAllLists,
 } = require('../services/cache');
+const { withProductLock } = require('../services/lock');
 
 exports.create = async (req, res) => {
   const errors = validateProduct(req.body);
@@ -78,4 +79,44 @@ exports.remove = async (req, res) => {
   await invalidateProduct(req.params.id);
   await invalidateAllLists();
   res.status(204).send();
+};
+
+exports.purchase = async (req, res) => {
+  const id = req.params.id;
+  const quantity = parseInt(req.body.quantity, 10);
+
+  if (!Number.isInteger(quantity) || quantity < 1) {
+    return res.status(400).json({ error: 'quantity must be a positive integer' });
+  }
+
+  const { rows: existing } = await pool.query('SELECT id FROM products WHERE id=$1', [id]);
+  if (!existing[0]) return res.status(404).json({ error: 'Not found' });
+
+  try {
+    const product = await withProductLock(id, async () => {
+      const { rows } = await pool.query(
+        `UPDATE products
+         SET stock = stock - $1, updated_at = NOW()
+         WHERE id = $2 AND stock >= $1
+         RETURNING *`,
+        [quantity, id]
+      );
+
+      if (!rows[0]) {
+        const err = new Error('Insufficient stock');
+        err.status = 409;
+        throw err;
+      }
+
+      return rows[0];
+    });
+
+    await invalidateProduct(id);
+    await invalidateAllLists();
+    res.json(product);
+  } catch (err) {
+    const status = err.status || 500;
+    if (status === 500) console.error(err);
+    res.status(status).json({ error: err.message });
+  }
 };
